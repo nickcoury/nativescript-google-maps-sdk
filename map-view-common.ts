@@ -39,6 +39,10 @@ export abstract class MapView extends View implements IMapView {
     public static zoomProperty = new Property("zoom", MAP_VIEW, new PropertyMetadata(0, PropertyMetadataSettings.None, onMapPropertyChanged));
     public static tiltProperty = new Property("tilt", MAP_VIEW, new PropertyMetadata(0, PropertyMetadataSettings.None, onMapPropertyChanged));
     public static paddingProperty = new Property("padding", MAP_VIEW, new PropertyMetadata(0, PropertyMetadataSettings.None, onPaddingPropertyChanged));
+    
+    public animateCameraChange: boolean = false;
+    
+    
 
     get latitude() {
         return this._getValue(MapView.latitudeProperty);
@@ -100,7 +104,7 @@ export abstract class MapView extends View implements IMapView {
             return [0, 0, 0, 0];
         }
     }
-
+    
     public abstract updateCamera(): void;
 
     public abstract updatePadding(): void;
@@ -229,3 +233,11 @@ export class Circle extends Shape implements ICircle {
     public center: IPosition;
     public _map: any;
 }
+
+export const enum MapType {
+    None = 0, // Not allowed in Android?
+    Normal = 1,
+    Satellite = 2,
+    Terrain = 3,
+    Hybrid = 4 // Not allowed in Android?
+} 

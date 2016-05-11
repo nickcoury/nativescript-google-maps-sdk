@@ -3,7 +3,7 @@ import application = require("application");
 import common = require("./map-view-common");
 
 import { MapView as IMapView, Position as IPosition, Marker as IMarker, Shape as IShape, Polyline as IPolyline, Polygon as IPolygon, Circle as ICircle, Camera, MarkerEventData, CameraEventData, PositionEventData } from ".";
-import { MapView as MapViewCommon, Position as PositionBase, Marker as MarkerBase, Polyline as PolylineBase, Polygon as PolygonBase, Circle as CircleBase } from "./map-view-common";
+import { MapView as MapViewCommon, Position as PositionBase, Marker as MarkerBase, Polyline as PolylineBase, Polygon as PolygonBase, Circle as CircleBase, MapType } from "./map-view-common";
 import { Image } from "ui/image";
 import { Color } from "color";
 import imageSource = require("image-source");
@@ -79,7 +79,12 @@ export class MapView extends MapViewCommon {
         this._pendingCameraUpdate = false;
 
         var cameraUpdate = com.google.android.gms.maps.CameraUpdateFactory.newCameraPosition(cameraPosition);
-        this.gMap.moveCamera(cameraUpdate);
+        
+        if (this.animateCameraChange) {
+            this.gMap.animateCamera(cameraUpdate);
+        } else {
+            this.gMap.moveCamera(cameraUpdate);
+        }
     }
 
     updatePadding() {
@@ -155,11 +160,30 @@ export class MapView extends MapViewCommon {
         this._shapes = [];
         this.gMap.clear();
     }
-
+    
     findShape(callback: (shape: IShape) => boolean): IShape {
         return this._shapes.find(callback);
     }
-
+    
+    myLocationEnabled(enabled:boolean) {
+        this.gMap.myLocationEnabled = enabled;
+    }
+    
+    mapType(type:MapType) {
+        console.log('Setting map type to ' + type);
+        this.gMap.setMapType(type);
+    }
+    
+    myLocationButtonEnabled(value:boolean) {
+        console.log('Setting my location to ' + value);
+        this.gMap.getUiSettings().setMyLocationButtonEnabled(value);
+    }
+    
+    zoomControlsEnabled(value:boolean) {
+        console.log('Setting zoom controls to ' + value);
+        this.gMap.getUiSettings().setZoomControlsEnabled(value);
+    }
+    
     private onActivityPaused(args) {
         if (!this.android || this._context != args.activity) return;
         this.android.onPause();
@@ -195,6 +219,8 @@ export class MapView extends MapViewCommon {
 
         var mapReadyCallback = new com.google.android.gms.maps.OnMapReadyCallback({
             onMapReady: function(gMap) {
+                console.log('onMapReady: ' + JSON.stringify(gMap));
+                
                 var owner = that.get();
                 owner._gMap = gMap;
                 owner.updatePadding();
@@ -326,6 +352,7 @@ export class MapView extends MapViewCommon {
             }
         });
 
+        console.log('getMapAsync');
         this._android.getMapAsync(mapReadyCallback);
     }
 
